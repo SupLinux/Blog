@@ -10,6 +10,6 @@ class User(models.Model):
     password = models.CharField(max_length=128, null=False)
 
     def __repr__(self):
-        return "".format(self.id, self.name)
+        return "{} {}".format(self.id, self.name)
 
     __str__ = __repr__

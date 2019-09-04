@@ -16,14 +16,18 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.http import HttpResponse, JsonResponse
-
+from django.shortcuts import render
+from django.template.loader import get_template
+from django.conf.urls import include
 
 def index(request):
-    print(request)
-    return JsonResponse({"user":"<h1>hello</h1>"})
+    d = dict(zip("abced",range(1,6)))
+    return render(request, "index.html", {"dict": d})
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r"index/$", index),
     url(r"^$", index),
+    url(r"^user/",include("user.urls"))
 ]

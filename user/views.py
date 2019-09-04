@@ -9,6 +9,7 @@ from django.conf import settings
 import jwt
 import datetime
 import bcrypt
+AUTH_EXPIRE = 60*60*8
 
 
 FORMAT = "%(asctime)s %(threadName) %(thread)d %(message)s"
@@ -75,16 +76,27 @@ def login(request:HttpRequest):
         print(e)
         return HttpResponseBadRequest()
 
-AUTH_EXPIRE = 60*60*8
 
-def test(request:HttpRequest):
+#认证中心
+def auth(view):
     #header request jwt
-    token = request.META.get("HTTP_JWT")
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        payload['timestamp']
-        if datetime.datetime.now().timestamp() - payload['timestamp'] > AUTH_EXPIRE:
+    def wrapper(request:HttpRequest):
+        token = request.META.get("HTTP_JWT")
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            if datetime.datetime.now().timestamp() - payload['timestamp'] > AUTH_EXPIRE:
+                return HttpResponse(status=401)
+            user_id = payload['user_id']
+            user = User.objects.get(pk=user_id)
+            request.user = user
+            return view(request)
+        except Exception as e:
+            print(e)
             return HttpResponse(status=401)
-    except Exception as e:
-        print(e)
+    return wrapper
+
+
+@auth
+def test(request:HttpRequest):
+    return HttpResponse(b"test")
 

@@ -23,7 +23,7 @@ def gen_token(user_id):
     :return: base64编码
     '''
     ret = jwt.encode({"user_id": user_id,
-                      "timestamp": int(datetime.datetime.now().timestamp())},
+                      "exp": int(datetime.datetime.now().timestamp()) + AUTH_EXPIRE},
                       settings.SECRET_KEY,
                       "HS256"
                       )
@@ -78,25 +78,25 @@ def login(request:HttpRequest):
 
 
 #认证中心
-def auth(view):
+def authenticate(view):
     #header request jwt
     def wrapper(request:HttpRequest):
         token = request.META.get("HTTP_JWT")
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            if datetime.datetime.now().timestamp() - payload['timestamp'] > AUTH_EXPIRE:
-                return HttpResponse(status=401)
+            # if datetime.datetime.now().timestamp() - payload['timestamp'] > AUTH_EXPIRE:
+            #     return HttpResponse(status=401)
             user_id = payload['user_id']
             user = User.objects.get(pk=user_id)
             request.user = user
-            return view(request)
         except Exception as e:
             print(e)
             return HttpResponse(status=401)
+        return view(request)
     return wrapper
 
 
-@auth
+@authenticate
 def test(request:HttpRequest):
     return HttpResponse(b"test")
 

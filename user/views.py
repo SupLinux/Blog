@@ -82,6 +82,7 @@ def authenticate(view):
     #header request jwt
     def wrapper(request:HttpRequest):
         token = request.META.get("HTTP_JWT")
+        # print(token, "+++++++++")
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             # if datetime.datetime.now().timestamp() - payload['timestamp'] > AUTH_EXPIRE:
